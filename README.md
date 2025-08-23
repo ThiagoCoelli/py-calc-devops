@@ -1,4 +1,5 @@
 # Py Calc DevOps
+![CI](https://github.com/ThiagoCoelli/py-calc-devops/actions/workflows/ci.yml/badge.svg)
 
 Calculadora simples em Python criada para praticar Git/PR/DevOps.
 
