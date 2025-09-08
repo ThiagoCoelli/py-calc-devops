@@ -1,25 +1,36 @@
 name: Continuous Integration
+
 on:
   pull_request:
     branches: [ main ]
 
+permissions: read-all
+
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository code
+      - name: Checkout source
         uses: actions/checkout@v4
-
       - name: Python Lint Code Scanning Action
         uses: advanced-security/python-lint-code-scanning-action@v1.1.2
         with:
           linter: pylint
 
-  buildx:
+  docker-build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout source
         uses: actions/checkout@v4
+
+      - name: List repo (root)
+        run: |
+          pwd
+          ls -la
+      - name: Assert Dockerfile & requirements
+        run: |
+          test -f Dockerfile && echo "Found Dockerfile" || (echo "No Dockerfile at root" && exit 1)
+          test -f requirements.txt && echo "Found requirements.txt" || (echo "No requirements.txt at root" && exit 1)
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -33,4 +44,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: false
-          tags: youruser/yourapp:pr-${{ github.event.pull_request.number }}
+          tags: ${{ github.actor }}/testevideoaula:pr-${{ github.event.pull_request.number }}

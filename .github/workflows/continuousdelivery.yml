@@ -1,38 +1,27 @@
 name: Continuous Delivery
+
 on:
   push:
     branches: [ main ]
 
+permissions: read-all
+
 jobs:
-  deliver:
+  docker-build-and-push:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository code
+      - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Simulando Continuous Delivery
-        uses: actions/upload-artifact@v4
-        with:
-          name: projetozipado
-          path: |
-            **.py
-            README.md
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: deliver
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: projetozipado
-      - name: Display structure of downloaded files
-        run: ls -R
-
-  buildx:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      # Diagnóstico rápido
+      - name: List repo (root)
+        run: |
+          pwd
+          ls -la
+      - name: Assert Dockerfile & requirements
+        run: |
+          test -f Dockerfile && echo "Found Dockerfile" || (echo "No Dockerfile at root" && exit 1)
+          test -f requirements.txt && echo "Found requirements.txt" || (echo "No requirements.txt at root" && exit 1)
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -46,10 +35,13 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push
+      - name: Who am I
+        run: docker info | grep Username || true
+
+      - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
-          context: .            
+          context: .
           file: ./Dockerfile
           push: true
-          tags: youruser/yourapp:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/testevideoaula:latest
