@@ -45,13 +45,16 @@ jobs:
   discord:
     needs: [lint, docker-build]
     runs-on: ubuntu-latest
-    if: always()
+    # roda mesmo se jobs anteriores falharem, mas só posta se:
+    # - PR é do mesmo repo (não é fork)
+    # - secret existe
+    if: ${{ always() && github.event.pull_request.head.repo.full_name == github.repository && secrets.DISCORD_WEBHOOK != '' }}
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
 
       - name: Run Discord Webhook
-        uses: johnnyhuy/actions-discord-git-webhook@main
+        uses: johnnyhuy/actions-discord-git-webhook@v1.2.0
         with:
           webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
           template: "avatar-with-link"
