@@ -13,11 +13,7 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      # Diagnóstico rápido
-      - name: List repo (root)
-        run: |
-          pwd
-          ls -la
+      # Falha cedo se faltar algo no contexto
       - name: Assert Dockerfile & requirements
         run: |
           test -f Dockerfile && echo "Found Dockerfile" || (echo "No Dockerfile at root" && exit 1)
@@ -32,8 +28,8 @@ jobs:
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}   # ex.: thiagocoelli (minúsculo)
+          password: ${{ secrets.DOCKERHUB_TOKEN }}      # Access Token com Read & Write
 
       - name: Who am I
         run: docker info | grep Username || true
@@ -44,4 +40,6 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/testevideoaula:latest
+          tags: |
+            thiagocoelli/minhaatividade:latest
+            thiagocoelli/minhaatividade:sha-${{ github.sha }}

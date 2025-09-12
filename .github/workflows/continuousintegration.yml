@@ -12,6 +12,7 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
+
       - name: Python Lint Code Scanning Action
         uses: advanced-security/python-lint-code-scanning-action@v1.1.2
         with:
@@ -23,10 +24,6 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: List repo (root)
-        run: |
-          pwd
-          ls -la
       - name: Assert Dockerfile & requirements
         run: |
           test -f Dockerfile && echo "Found Dockerfile" || (echo "No Dockerfile at root" && exit 1)
@@ -44,13 +41,22 @@ jobs:
           context: .
           file: ./Dockerfile
           push: false
-          tags: ${{ github.actor }}/testevideoaula:pr-${{ github.event.pull_request.number }}
+          tags: ${{ github.actor }}/minhaatividade:pr-${{ github.event.pull_request.number }}
+          args:
+          entrypoint:
 
   discord:
+    # Notifica sempre que o CI rodar (sucesso ou falha) após os jobs acima
+    needs: [ lint, docker-build ]
     runs-on: ubuntu-latest
+    if: always()
     steps:
-  - uses: actions/checkout@v4
-  - name: Run Discord Webhook
-    uses: Sniddl/discord-commit@v1.6
-    with:
-      webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Run Discord Webhook
+        uses: johnnyhuy/actions-discord-git-webhook@main
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
+          template: "avatar-with-link"
+          include-extras: true
