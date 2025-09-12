@@ -45,12 +45,12 @@ jobs:
           file: ./Dockerfile
           push: false
           tags: ${{ github.actor }}/testevideoaula:pr-${{ github.event.pull_request.number }}
-          
+
   discord:
     runs-on: ubuntu-latest
     steps:
   - uses: actions/checkout@v4
   - name: Run Discord Webhook
-    uses: johnnyhuy/actions-discord-git-webhook@main
+    uses: Sniddl/discord-commit@v1.6
     with:
       webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
