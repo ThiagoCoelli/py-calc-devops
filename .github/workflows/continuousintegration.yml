@@ -43,19 +43,24 @@ jobs:
           tags: ${{ github.actor }}/minhaatividade:pr-${{ github.event.pull_request.number }}
 
   discord:
-    needs: [build, docker]
+    needs: [ build, docker ]
     runs-on: ubuntu-latest
     env:
-      DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}   
+      DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Run Discord Webhook
-
+      - name: Send Discord notification
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && env.DISCORD_WEBHOOK != '' }}
-        uses: johnnyhuy/actions-discord-git-webhook@v1.2.0
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ env.DISCORD_WEBHOOK }}
         with:
-          webhook_url: ${{ env.DISCORD_WEBHOOK }}
-          template: "avatar-with-link"
-          include-extras: true
+          args: |
+             CI passou no PR #${{ github.event.pull_request.number }}
+             Repo: ${{ github.repository }}
+             Autor: ${{ github.actor }}
+             Branch: ${{ github.head_ref }}
+             Commit: ${{ github.sha }}
+  
