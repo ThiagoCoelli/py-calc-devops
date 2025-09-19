@@ -15,8 +15,10 @@ jobs:
 
       - name: Assert Dockerfile & requirements
         run: |
+          ls -la
           test -f Dockerfile
           test -f requirements.txt
+          sed -n '1,120p' Dockerfile
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -41,13 +43,9 @@ jobs:
           USERNAME="$(echo -n "$RAW_USER" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')"
           echo "USERNAME normalizado: $USERNAME"
           echo "$USERNAME" | grep -E '^[a-z0-9][a-z0-9._-]*$' >/dev/null || { echo "USERNAME inválido: $USERNAME"; exit 1; }
-
-          REPO="$USERNAME/pushcheck:tmp"
-          echo "Teste de push em: $REPO"
-
           docker pull busybox:latest
-          docker tag busybox:latest "$REPO"
-          docker push "$REPO"
+          docker tag busybox:latest "$USERNAME/pushcheck:tmp"
+          docker push "$USERNAME/pushcheck:tmp"
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
