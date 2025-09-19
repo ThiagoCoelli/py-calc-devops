@@ -2,7 +2,7 @@
 
 Calculadora simples em Python criada para praticar Git/PR/DevOps.
 
-## Como rodar testes
+## Para você rodar os testes
 ```bash
 pytest -q
 
