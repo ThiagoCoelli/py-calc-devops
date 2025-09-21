@@ -46,9 +46,9 @@ jobs:
           pip install -r requirements.txt || true
           pip install fastapi[standard]==0.116.1 pytest requests
 
-      - name: Run tests
+      - name: Test with pytest
         run: |
-          pytest -q
+          pytest
 
   docker:
     runs-on: ubuntu-latest
