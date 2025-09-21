@@ -1,3 +1,4 @@
+#vamosversesobeostestes
 from fastapi.testclient import TestClient
 from src.main import app   # ajuste o import caso seu main.py esteja em outra pasta
 
