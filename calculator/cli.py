@@ -1,5 +1,6 @@
 """Interface de linha de comando (CLI) para a calculadora."""
 #Só um comentário para ver se vai subir os testes
+#vamostentarfinalizar
 from calculator.core import add, sub, mul, div
 
 
