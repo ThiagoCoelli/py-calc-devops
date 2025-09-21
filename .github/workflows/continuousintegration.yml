@@ -12,10 +12,43 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt || true
+          pip install fastapi[standard]==0.116.1 pytest requests
+
       - name: Python Lint Code Scanning Action
         uses: advanced-security/python-lint-code-scanning-action@v1.1.2
         with:
           linter: pylint
+
+  testes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt || true
+          pip install fastapi[standard]==0.116.1 pytest requests
+
+      - name: Run tests
+        run: |
+          pytest -q
 
   docker:
     runs-on: ubuntu-latest
@@ -43,16 +76,23 @@ jobs:
           tags: ${{ github.actor }}/minhaatividade:pr-${{ github.event.pull_request.number }}
 
   discord:
-    needs: [build, docker]
+    needs: [ build, docker, testes ]
     runs-on: ubuntu-latest
-    if: ${{ always() && github.event.pull_request.head.repo.full_name == github.repository && secrets.DISCORD_WEBHOOK != '' }}
+    env:
+      DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Run Discord Webhook
-        uses: johnnyhuy/actions-discord-git-webhook@v1.2.0
+      - name: Send Discord notification
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && env.DISCORD_WEBHOOK != '' }}
+        uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK: ${{ env.DISCORD_WEBHOOK }}
         with:
-          webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
-          template: "avatar-with-link"
-          include-extras: true
+          args: |
+              CI passou no PR #${{ github.event.pull_request.number }}
+              Repo: ${{ github.repository }}
+              Autor: ${{ github.actor }}
+              Branch: ${{ github.head_ref }}
+              Commit: ${{ github.sha }}
