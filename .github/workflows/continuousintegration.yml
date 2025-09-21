@@ -21,18 +21,34 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt || true   # tenta instalar requirements (caso não exista, não quebra)
+          pip install -r requirements.txt || true
           pip install fastapi[standard]==0.116.1 pytest requests
-
-      - name: Run tests
-        run: |
-          pytest -q
 
       - name: Python Lint Code Scanning Action
         uses: advanced-security/python-lint-code-scanning-action@v1.1.2
         with:
           linter: pylint
 
+  testes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt || true
+          pip install fastapi[standard]==0.116.1 pytest requests
+
+      - name: Run tests
+        run: |
+          pytest -q
 
   docker:
     runs-on: ubuntu-latest
@@ -60,7 +76,7 @@ jobs:
           tags: ${{ github.actor }}/minhaatividade:pr-${{ github.event.pull_request.number }}
 
   discord:
-    needs: [ build, docker ]
+    needs: [ build, docker, testes ]
     runs-on: ubuntu-latest
     env:
       DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
@@ -75,9 +91,8 @@ jobs:
           DISCORD_WEBHOOK: ${{ env.DISCORD_WEBHOOK }}
         with:
           args: |
-             CI passou no PR #${{ github.event.pull_request.number }}
-             Repo: ${{ github.repository }}
-             Autor: ${{ github.actor }}
-             Branch: ${{ github.head_ref }}
-             Commit: ${{ github.sha }}
-  
+              CI passou no PR #${{ github.event.pull_request.number }}
+              Repo: ${{ github.repository }}
+              Autor: ${{ github.actor }}
+              Branch: ${{ github.head_ref }}
+              Commit: ${{ github.sha }}
